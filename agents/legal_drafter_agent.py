@@ -2,7 +2,7 @@
 
 from crewai import Agent, LLM
 
-llm = LLM(model="gemini/gemini-1.5-flash-latest", temperature=0.2)
+llm = LLM(model="gemini/gemini-2.5-flash-lite", temperature=0.2)
 
 legal_drafter_agent = Agent(
     role="Legal Document Drafting Agent",

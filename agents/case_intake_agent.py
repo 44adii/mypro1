@@ -5,7 +5,7 @@ from crewai import Agent, LLM
 
 # agent specific LLM - can also be configured din .env file
 llm = LLM(
-    model="gemini/gemini-1.5-flash-latest",
+    model="gemini/gemini-2.5-flash-lite",
     temperature=0
 )
 

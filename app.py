@@ -10,9 +10,9 @@ load_dotenv()
 # from crew import legal_assistant_crew
 # from tools.email_tool import send_email_smtp
 
-st.set_page_config(page_title="Legal Scenario Solver", page_icon="🧠", layout="wide")
+st.set_page_config(page_title="AI Legal Assistant", page_icon="🧠", layout="wide")
 
-st.title("⚖️ Legal Scenario Solver")
+st.title("⚖️ Personal AI Legal Assistant")
 st.markdown(
     "Enter a legal problem in plain English or Hindi. This assistant will help you:\n"
     "- Understand the legal issue\n"
@@ -27,10 +27,46 @@ def load_crew():
     from crew import legal_assistant_crew
     return legal_assistant_crew
 
+    
+
+# --- Voice Input Section ---
+st.markdown("### 🎙️ Voice Input")
+from audio_recorder_streamlit import audio_recorder
+import google.generativeai as genai
+import os
+
+audio_bytes = audio_recorder( text="", recording_color="#e8b62c", neutral_color="#6aa36f", icon_name="microphone", icon_size="2x")
+
+transcribed_text = ""
+if audio_bytes:
+    # Check if we already transcribed this exact audio to avoid re-running on every slight interaction
+    # For simplicity, we just run it. Using session state would be better for distinct recordings.
+    st.info("🎧 Transcribing audio...")
+    try:
+        # Configure GenAI with the API Key
+        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+        model = genai.GenerativeModel("gemini-2.5-flash-lite")
+        
+        # Generate content from audio bytes
+        response = model.generate_content([
+            "Transcribe the following legal issue description exactly into English or Hindi as spoken.",
+            {"mime_type": "audio/mp3", "data": audio_bytes}
+        ])
+        transcribed_text = response.text
+        st.success("✅ Transcription Complete!")
+    except Exception as e:
+        st.error(f"❌ Transcription failed: {e}")
+
+# Use transcribed text if available, otherwise use previous input
+default_input = transcribed_text if transcribed_text else ""
+
+submitted = False
 with st.form("legal_form"):
     col1, col2 = st.columns([3, 1])
     with col1:
-        user_input = st.text_area("📝 Describe your legal issue:", height=250)
+        # If we have transcribed text, we value=transcribed_text. 
+        # Note: This might reset if user types manually then records again. 
+        user_input = st.text_area("📝 Describe your legal issue (Type or Speak):", value=default_input, height=250)
     with col2:
         language_pref = st.selectbox(
             "🌐 Response Language",
@@ -64,9 +100,47 @@ if submitted:
                 st.error(f"❌ Execution failed: {e}")
                 st.stop()
 
+
         st.success("✅ Legal Assistant completed the workflow!")
 
-        # Display all task outputs
+        # --- NEW: Display Advisory Agent Output (Task 1) ---
+        import json
+        try:
+            # Task 0: Intake, Task 1: Advisory
+            if hasattr(result, 'tasks_output') and len(result.tasks_output) > 1:
+                advisory_output_raw = result.tasks_output[1].raw
+                
+                # Clean up json string if it has markdown code blocks
+                clean_json = advisory_output_raw.replace("```json", "").replace("```", "").strip()
+                
+                advisory_data = json.loads(clean_json)
+                
+                st.markdown("---")
+                st.subheader("🛡️ Strategic Legal Advice")
+                
+                # Severity Badge
+                severity = advisory_data.get('severity', 'Unknown')
+                legal_type = advisory_data.get('legal_type', 'General')
+                action = advisory_data.get('recommended_action', 'Review Case')
+                guidance = advisory_data.get('step_guidance', 'Please consult a lawyer.')
+
+                col_a, col_b, col_c = st.columns(3)
+                with col_a:
+                    st.info(f"**Severity**: {severity}")
+                with col_b:
+                    st.warning(f"**Type**: {legal_type}")
+                with col_c:
+                    st.error(f"**Action**: {action}")
+                
+                st.markdown(f"**👉 Immediate Step Guidance:**\n> {guidance}")
+                st.markdown("---")
+
+        except Exception as e:
+            # Fallback if parsing fails, just don't show the special section
+            print(f"DEBUG: Could not parse advisory JSON: {e}")
+            pass
+        # ---------------------------------------------------
+
         st.subheader("📄 Final Legal Document")
         final_result = str(result)
         st.markdown(final_result)

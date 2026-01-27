@@ -1,25 +1,21 @@
-# advisory_agent.py
+from crewai import Agent
+from langchain_google_genai import ChatGoogleGenerativeAI as LLM
 
-from crewai import Agent, LLM
+# Using the Lite model as per project standard
+llm = LLM(model="gemini/gemini-2.5-flash-lite", temperature=0.1)
 
-
-llm = LLM(model="gemini/models/gemini-1.5-flash", temperature=0.2)
-
-legal_advisory_agent = Agent(
-    role="Legal Advisory Agent",
-    goal=(
-        "Provide clear, actionable legal advice and next steps based on the case intake, "
-        "identified IPC sections, and relevant precedents in the user's preferred language."
-    ),
+advisory_agent = Agent(
+    role="Legal Advisor & Strategist",
+    goal="Analyze the user's situation to determine severity, legal classification, and the immediate best course of action (Police vs Lawyer vs Self-Help).",
     backstory=(
-        "You are a client-facing advisor who explains legal implications plainly and proposes a practical plan. "
-        "You synthesize upstream analysis into concise recommendations, potential risks, and immediate actions. "
-        "You tailor tone and language (English/Hindi) to the user's preference and avoid legalese unless necessary."
+        "You are an expert Senior Legal Consultant who creates the initial roadmap for any legal issue. "
+        "Your job is NOT to draft documents immediately, but to tell the user WHERE to go first. "
+        "You strictly distinguish between Criminal matters (Police/FIR needed), Civil matters (Lawyer/Notice needed), "
+        "and Consumer/Minor issues (Self-help/Forum needed). "
+        "You always assess the SEVERITY of the situation (High/Low) to prioritize emergencies."
     ),
-    tools=[],
     llm=llm,
     verbose=True,
+    max_iter=3,
+    max_rpm=60,
 )
-
-
-

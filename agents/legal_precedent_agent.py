@@ -3,7 +3,7 @@
 from crewai import Agent, LLM
 from tools.legal_precedent_search_tool import search_legal_precedents
 
-llm = LLM(model="gemini/gemini-1.5-flash-latest", temperature=0)
+llm = LLM(model="gemini/gemini-2.5-flash-lite", temperature=0)
 
 legal_precedent_agent = Agent(
     role="Legal Precedent Agent",

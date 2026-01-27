@@ -3,15 +3,19 @@
 from crewai import Task
 from agents.ipc_section_agent import ipc_section_agent
 from tasks.case_intake_task import case_intake_task
+from tasks.advisory_task import advisory_task
 
 ipc_section_task = Task(
     agent=ipc_section_agent,
-    context=[case_intake_task],
+    context=[case_intake_task, advisory_task],
     async_execution=True,
     description=(
-        "You are provided with the structured legal context generated from the previous task.\n\n"
-        "Your job is to identify and retrieve the most relevant sections from the Indian Penal Code (IPC) "
-        "that apply to this legal issue. Use your tool to search and extract the top 3-5 most relevant IPC sections.\n\n"
+        "You are provided with the structured legal context from the Intake and Advisory tasks.\n\n"
+        "1. **Analyze Advisory**: Check the 'legal_type' (Criminal vs Civil) and 'legal_issue' from the Advisory Task output.\n"
+        "2. **Search Strategy**: \n"
+        "   - If Criminal: Focus on IPC sections related to offenses, penalties, and FIRs.\n"
+        "   - If Civil: Focus on property, contract, or specific civil codes (if applicable) or relevant IPC sections for negligence/nuisance.\n"
+        "3. **Retrieve**: Identify and retrieve the top 3-5 most relevant IPC sections.\n\n"
         "IMPORTANT: The user's language preference is: {language_preference}\n"
         "- If the preference is 'hindi', append '[hindi]' to your search query AND present your response in Hindi\n"
         "- If 'english', append '[english]' to your search query AND present your response in English\n"

@@ -16,3 +16,4 @@ langchain-google-genai
 pinecone-client
 langchain-pinecone
 tenacity
+audio-recorder-streamlit

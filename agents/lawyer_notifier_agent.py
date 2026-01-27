@@ -4,7 +4,7 @@ from crewai import Agent, LLM
 from tools.lawyer_email_tool import send_lawyer_email_tool
 
 
-llm = LLM(model="gemini/gemini-1.5-flash-latest", temperature=0.2)
+llm = LLM(model="gemini/gemini-2.5-flash-lite", temperature=0.2)
 
 lawyer_notifier_agent = Agent(
     role="Lawyer Notifier Agent",
